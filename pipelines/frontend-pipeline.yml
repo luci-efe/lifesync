@@ -52,13 +52,15 @@ stages:
               npm run build
             displayName: 'npm install, lint, and build'
             env:
-              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $(CLERK_PUBLISHABLE_KEY)
+              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
               NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
 
   - stage: Package
     displayName: Build and Push Docker Image
     dependsOn: Build
     condition: succeeded()
+    variables:
+      - group: LifeSync-Secrets-Dev
     jobs:
       - job: Docker
         displayName: Docker Build & Push
@@ -66,18 +68,33 @@ stages:
           vmImage: $(vmImageName)
         steps:
           - task: Docker@2
-            displayName: Build and Push
+            displayName: Login to Docker Registry
             inputs:
-              command: buildAndPush
+              command: login
+              containerRegistry: $(dockerRegistryServiceConnection)
+
+          - script: |
+              docker build \
+                --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
+                --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
+                -t $(containerRegistry)/$(imageRepository):$(tag) \
+                -t $(containerRegistry)/$(imageRepository):$(Build.SourceBranchName)-latest \
+                -f $(dockerfilePath) \
+                $(Build.SourcesDirectory)/frontend
+            displayName: Build Docker Image
+            env:
+              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
+              NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
+
+          - task: Docker@2
+            displayName: Push Docker Image
+            inputs:
+              command: push
               repository: $(containerRegistry)/$(imageRepository)
-              dockerfile: $(dockerfilePath)
               containerRegistry: $(dockerRegistryServiceConnection)
               tags: |
                 $(tag)
                 $(Build.SourceBranchName)-latest
-              arguments: |
-                --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$(CLERK_PUBLISHABLE_KEY)
-                --build-arg NEXT_PUBLIC_API_URL=$(NEXT_PUBLIC_API_URL)
 
   - stage: DeployDev
     displayName: Deploy to Dev
@@ -97,7 +114,7 @@ stages:
               steps:
                 - task: AzureWebAppContainer@1
                   inputs:
-                    azureSubscription: 'azure-lifesync-dev'
+                    azureSubscription: 'azure-service-connection-dev'
                     appName: 'lifesync-frontend-dev'
                     containers: '$(containerRegistry)/$(imageRepository):$(tag)'
 
@@ -131,7 +148,7 @@ stages:
               steps:
                 - task: AzureWebAppContainer@1
                   inputs:
-                    azureSubscription: 'azure-lifesync-prod'
+                    azureSubscription: 'azure-service-connection-prod'
                     appName: 'lifesync-frontend-prod'
                     containers: '$(containerRegistry)/$(imageRepository):$(tag)'
 
