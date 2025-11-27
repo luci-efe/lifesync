@@ -52,7 +52,7 @@ stages:
               npm run build
             displayName: 'npm install, lint, and build'
             env:
-              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $(CLERK_PUBLISHABLE_KEY)
+              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
               NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
 
   - stage: Package
@@ -72,14 +72,12 @@ stages:
               containerRegistry: $(dockerRegistryServiceConnection)
 
           - script: |
-              echo "Checking if CLERK_PUBLISHABLE_KEY is set..."
-              if [ -z "$CLERK_PUBLISHABLE_KEY" ] || [ "$CLERK_PUBLISHABLE_KEY" = '$(CLERK_PUBLISHABLE_KEY)' ]; then
-                echo "##[error]CLERK_PUBLISHABLE_KEY is empty or not set!"
-                echo "##[error]Please add CLERK_PUBLISHABLE_KEY to the LifeSync-Secrets-Dev variable group in Azure DevOps"
-                echo "##[error]Go to: Pipelines -> Library -> LifeSync-Secrets-Dev -> Add variable"
+              echo "Checking environment variables..."
+              if [ -z "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ] || [ "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" = '$(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)' ]; then
+                echo "##[error]NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is empty or not set!"
                 exit 1
               else
-                echo "CLERK_PUBLISHABLE_KEY is set (length: ${#CLERK_PUBLISHABLE_KEY} chars, starts with: ${CLERK_PUBLISHABLE_KEY:0:3}...)"
+                echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is set (length: ${#NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY} chars, starts with: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:0:3}...)"
               fi
               if [ -z "$NEXT_PUBLIC_API_URL" ] || [ "$NEXT_PUBLIC_API_URL" = '$(NEXT_PUBLIC_API_URL)' ]; then
                 echo "##[warning]NEXT_PUBLIC_API_URL is empty or not set"
@@ -88,12 +86,12 @@ stages:
               fi
             displayName: Verify environment variables
             env:
-              CLERK_PUBLISHABLE_KEY: $(CLERK_PUBLISHABLE_KEY)
+              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
               NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
 
           - script: |
               docker build \
-                --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$CLERK_PUBLISHABLE_KEY" \
+                --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
                 --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
                 -t $(containerRegistry)/$(imageRepository):$(tag) \
                 -t $(containerRegistry)/$(imageRepository):$(Build.SourceBranchName)-latest \
@@ -101,7 +99,7 @@ stages:
                 $(Build.SourcesDirectory)/frontend
             displayName: Build Docker Image
             env:
-              CLERK_PUBLISHABLE_KEY: $(CLERK_PUBLISHABLE_KEY)
+              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
               NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
 
           - task: Docker@2
