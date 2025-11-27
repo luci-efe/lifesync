@@ -1,0 +1,60 @@
+El proyecto debe consistir en:
+
+1. Tarea de: "presentación del proyecto final":
+
+2. Entregar Acceso a Azure Devops
+
+Backlog en Azure DevOps
+Wiki en Azure DevOps con:
+Descripción del proyecto
+Componentes que llevará, métodos de estos componentes ( preferentemente diagrama de clases )
+Stack Tecnólogico
+Recursos que se van a crear ( diagrama de infraestructura )
+Incluye el diagrama de deployment
+Repositorio de Infra con código de Terraform para la creación de la Infraestructura
+Ramas:
+Backend
+PRs ( Estrategía de ramas )
+FrontEnd
+PRs ( Estrategía de ramas )
+Pipelines
+BackEnd
+Ambiente Dev
+Pruebas Unitarias
+Ambiente Prod
+Frontend
+Ambiente Dev
+Ambiente Prod
+Docker Hub
+Service connection
+Azure Portal
+Recursos creados en Azure DevOps
+Backend
+Frontent
+Criterios a Evaluar en la presentación:
+
+Descripción del proyecto
+Descripción de la tecnología
+Estrategia de ramas usadas
+Realizar un cambio en el código
+Autorizar el PR
+Ejecutar el pipeline en Ambiente Desarrollo ( Dev )
+Ver el resultado de las pruebas unitarias
+Ver el proyecto publicado en el ambiente Dev
+Aprobar el pipeline a Ambiente Producción ( Prod )
+Ver el cambio en Producción en la URL pública de Azure DevOps
+APM
+Trazas,
+Errores
+Mensajes en APM
+Mostrar las metricas en el portal de Azure 
+CPU
+Memoria
+Request
+ 
+
+Entregables:
+
+Tarea de presentación del proyecto ( entregado previamente)
+Proyecto en Azure DevOps
+Mandar la invitación a colaborar ( licencia Basic ) a la cuenta eduardo.estrada@iteso.mx
