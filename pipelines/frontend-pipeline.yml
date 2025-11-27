@@ -74,34 +74,6 @@ stages:
               containerRegistry: $(dockerRegistryServiceConnection)
 
           - script: |
-              echo "=== Debug: Checking Azure Pipeline variables ==="
-              echo "Raw variable test (should show value or literal string):"
-              echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: [${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}]"
-              echo "NEXT_PUBLIC_API_URL: [${NEXT_PUBLIC_API_URL}]"
-              echo ""
-              
-              if [ -z "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ] && [ -z "$NEXT_PUBLIC_API_URL" ]; then
-                 echo "##[error]BOTH variables are empty. The variable group 'LifeSync-Secrets-Dev' is likely not linked or accessible."
-                 exit 1
-              fi
-
-              if [ -z "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
-                echo "##[error]NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is EMPTY, but API_URL is present. Check variable name spelling."
-                exit 1
-              fi
-              
-              if [ "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" = '$(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)' ]; then
-                echo "##[error]Variable was not substituted - variable group not accessible"
-                exit 1
-              fi
-
-              echo "##[section]Variables appear correct."
-            displayName: Verify environment variables
-            env:
-              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
-              NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
-
-          - script: |
               docker build \
                 --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
                 --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
