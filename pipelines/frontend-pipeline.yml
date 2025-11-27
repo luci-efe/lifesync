@@ -72,17 +72,25 @@ stages:
               containerRegistry: $(dockerRegistryServiceConnection)
 
           - script: |
-              echo "Checking environment variables..."
-              if [ -z "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ] || [ "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" = '$(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)' ]; then
-                echo "##[error]NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is empty or not set!"
+              echo "=== Debug: Checking Azure Pipeline variables ==="
+              echo "Raw variable test (should show value or literal string):"
+              echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY from env: [$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY]"
+              echo "Length: ${#NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}"
+              echo ""
+              echo "If the above shows '[]' or literal '[\$(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)]', the variable group is not linked correctly."
+              echo ""
+              if [ -z "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
+                echo "##[error]NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is EMPTY"
+                echo "##[error]Check: 1) Variable group name matches exactly 'LifeSync-Secrets-Dev'"
+                echo "##[error]Check: 2) Variable name in group is exactly 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'"
+                echo "##[error]Check: 3) Variable has a value (not empty)"
+                exit 1
+              elif [ "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" = '$(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)' ]; then
+                echo "##[error]Variable was not substituted - variable group not accessible"
                 exit 1
               else
-                echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is set (length: ${#NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY} chars, starts with: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:0:3}...)"
-              fi
-              if [ -z "$NEXT_PUBLIC_API_URL" ] || [ "$NEXT_PUBLIC_API_URL" = '$(NEXT_PUBLIC_API_URL)' ]; then
-                echo "##[warning]NEXT_PUBLIC_API_URL is empty or not set"
-              else
-                echo "NEXT_PUBLIC_API_URL is set: $NEXT_PUBLIC_API_URL"
+                echo "##[section]NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is set correctly!"
+                echo "Starts with: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:0:8}..."
               fi
             displayName: Verify environment variables
             env:
