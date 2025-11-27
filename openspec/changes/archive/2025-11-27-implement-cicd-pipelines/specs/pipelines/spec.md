@@ -1,9 +1,6 @@
-# Pipelines Specification
+# Pipelines Specification Delta
 
-## Overview
-Definición de pipelines CI/CD en Azure DevOps usando YAML para automatizar build, test y deploy del frontend y backend a ambientes Dev y Prod.
-
----
+## MODIFIED Requirements
 
 ### Requirement: Pipeline Separation
 El sistema MUST tener pipelines separados para frontend y backend.
@@ -105,64 +102,6 @@ El sistema MUST desplegar frontend a Dev y Prod siguiendo el mismo patrón que b
 
 ---
 
-### Requirement: Variable Groups
-El sistema DEBE usar Variable Groups para secretos.
-
-#### Scenario: Variable Group Structure
-- **WHEN** se configuran secretos
-- **THEN** existen Variable Groups:
-  - `LifeSync-Secrets-Dev`
-  - `LifeSync-Secrets-Prod`
-- **AND** contienen:
-  - `CLERK_PUBLISHABLE_KEY`
-  - `CLERK_SECRET_KEY`
-  - `DATABASE_URL`
-  - `APPLICATIONINSIGHTS_CONNECTION_STRING`
-  - `DOCKERHUB_USERNAME`
-  - `DOCKERHUB_TOKEN`
-
-#### Scenario: Secret Masking
-- **WHEN** se usan variables secretas
-- **THEN** los valores están marcados como secret
-- **AND** no se muestran en logs del pipeline
-
----
-
-### Requirement: Service Connections
-El sistema DEBE configurar Service Connections para Azure y Docker Hub.
-
-#### Scenario: Azure Resource Manager Connection
-- **WHEN** se despliega a Azure
-- **THEN** existe Service Connection `azure-lifesync`
-- **AND** tiene permisos para:
-  - Azure Web App (deploy)
-
-#### Scenario: Docker Hub Connection
-- **WHEN** se hace push de imágenes
-- **THEN** existe Service Connection `dockerhub-lifesync` de tipo "Docker Registry"
-- **AND** configurado con Docker Hub credentials (username + access token)
-- **AND** permite push/pull de imágenes `{username}/lifesync-*`
-
----
-
-### Requirement: Branch Policies
-El sistema DEBE aplicar políticas en ramas principales.
-
-#### Scenario: Main Branch Protection
-- **WHEN** se configura rama `main`
-- **THEN** requiere Pull Request para merge
-- **AND** requiere al menos 1 reviewer aprobando
-- **AND** requiere build exitoso
-- **AND** no permite push directo
-
-#### Scenario: Develop Branch Protection
-- **WHEN** se configura rama `develop`
-- **THEN** requiere Pull Request para merge
-- **AND** requiere build exitoso
-- **AND** es la rama base para features
-
----
-
 ### Requirement: Pipeline Triggers
 El sistema MUST configurar triggers apropiados para ambas ramas principales.
 
@@ -179,59 +118,7 @@ El sistema MUST configurar triggers apropiados para ambas ramas principales.
 
 ---
 
-### Requirement: Pipeline Stages Structure
-El sistema DEBE organizar pipelines en stages claros.
-
-#### Scenario: Backend Pipeline Stages
-- **WHEN** se ejecuta backend pipeline
-- **THEN** tiene stages:
-  1. `Build` - Compile, lint, test
-  2. `Package` - Docker build y push
-  3. `Deploy-Dev` - Deploy automático a dev
-  4. `Deploy-Prod` - Deploy con approval a prod
-
-#### Scenario: Frontend Pipeline Stages
-- **WHEN** se ejecuta frontend pipeline
-- **THEN** tiene stages:
-  1. `Build` - Next.js build
-  2. `Package` - Docker build y push
-  3. `Deploy-Dev` - Deploy automático
-  4. `Deploy-Prod` - Deploy con approval
-
----
-
-### Requirement: Deployment Verification
-El sistema DEBE verificar que deployments fueron exitosos.
-
-#### Scenario: Health Check After Deploy
-- **WHEN** se completa deploy del backend
-- **THEN** se hace GET al endpoint `/api/health`
-- **AND** se espera status 200
-- **AND** si falla, el stage se marca como fallido
-
-#### Scenario: Smoke Test After Deploy
-- **WHEN** se completa deploy del frontend
-- **THEN** se verifica que la URL responde
-- **AND** se puede ver la landing page
-
----
-
-### Requirement: Artifact Management
-El sistema DEBE gestionar artifacts de build.
-
-#### Scenario: Test Results Artifact
-- **WHEN** se completa stage de tests
-- **THEN** se publican resultados como artifact
-- **AND** se retienen por 30 días
-
-#### Scenario: Docker Image Tags
-- **WHEN** se hace push a ACR
-- **THEN** la imagen tiene tags:
-  - `$(Build.BuildId)` - único por build
-  - `latest` - siempre la más reciente
-  - `$(Build.SourceBranchName)` - rama de origen
-
----
+## ADDED Requirements
 
 ### Requirement: Pipeline File Location
 El sistema MUST tener los pipelines en un directorio centralizado.
