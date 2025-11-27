@@ -1,0 +1,8 @@
+environment               = "dev"
+location                  = "eastus2"
+project_name              = "lifesync"
+app_service_sku           = "F1"
+dockerhub_username        = "your_dockerhub_username"
+postgresql_admin_login    = "psqladmin"
+postgresql_admin_password = "YourStrongPassword123!"
+owner_email               = "your.email@example.com"
