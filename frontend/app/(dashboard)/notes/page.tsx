@@ -26,12 +26,12 @@ export default function NotesPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">Notes</h1>
-                <Button asChild>
-                    <Link href="/notes/new">
+                <Link href="/notes/new">
+                    <Button>
                         <Plus className="mr-2 h-4 w-4" />
                         New Note
-                    </Link>
-                </Button>
+                    </Button>
+                </Link>
             </div>
 
             <NoteList notes={notes} isLoading={isLoading} onDelete={handleDelete} />

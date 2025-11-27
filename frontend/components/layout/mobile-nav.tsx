@@ -2,66 +2,79 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, FileText, Calendar, X } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import { LayoutDashboard, CheckSquare, StickyNote, Calendar, Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 
-const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Tasks", href: "/tasks", icon: CheckSquare },
-    { name: "Notes", href: "/notes", icon: FileText },
-    { name: "Calendar", href: "/calendar", icon: Calendar },
+const routes = [
+    {
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        href: "/dashboard",
+        color: "text-sky-500",
+    },
+    {
+        label: "Tasks",
+        icon: CheckSquare,
+        href: "/tasks",
+        color: "text-violet-500",
+    },
+    {
+        label: "Notes",
+        icon: StickyNote,
+        href: "/notes",
+        color: "text-pink-700",
+    },
+    {
+        label: "Calendar",
+        icon: Calendar,
+        href: "/calendar",
+        color: "text-orange-700",
+    },
 ];
 
-interface MobileNavProps {
-    onClose: () => void;
-}
-
-export function MobileNav({ onClose }: MobileNavProps) {
+export function MobileNav() {
     const pathname = usePathname();
+    const [open, setOpen] = useState(false);
 
     return (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
-            <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-            <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white dark:bg-gray-900 pt-5 pb-4">
-                <div className="absolute top-0 right-0 -mr-12 pt-2">
-                    <Button
-                        variant="ghost"
-                        className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                        onClick={onClose}
-                    >
-                        <X className="h-6 w-6 text-white" aria-hidden="true" />
-                        <span className="sr-only">Close sidebar</span>
-                    </Button>
-                </div>
-                <div className="flex flex-shrink-0 items-center px-4">
-                    <span className="text-xl font-semibold">LifeSync</span>
-                </div>
-                <div className="mt-5 h-0 flex-1 overflow-y-auto">
-                    <nav className="space-y-1 px-2">
-                        {navigation.map((item) => {
-                            const Icon = item.icon;
-                            return (
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                    <Menu />
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0">
+                <div className="space-y-4 py-4 flex flex-col h-full bg-background">
+                    <div className="px-3 py-2 flex-1">
+                        <Link href="/dashboard" className="flex items-center pl-3 mb-14" onClick={() => setOpen(false)}>
+                            <h1 className="text-2xl font-bold tracking-tighter">
+                                LifeSync
+                            </h1>
+                        </Link>
+                        <div className="space-y-1">
+                            {routes.map((route) => (
                                 <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    onClick={onClose}
+                                    key={route.href}
+                                    href={route.href}
+                                    onClick={() => setOpen(false)}
                                     className={cn(
-                                        "group flex items-center rounded-md px-2 py-2 text-base font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50",
-                                        pathname === item.href || pathname.startsWith(item.href + "/")
-                                            ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
-                                            : "text-gray-600 dark:text-gray-400"
+                                        "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-primary hover:bg-primary/10 rounded-lg transition-all",
+                                        pathname === route.href ? "text-primary bg-primary/10" : "text-muted-foreground"
                                     )}
                                 >
-                                    <Icon className="mr-4 h-6 w-6 flex-shrink-0" />
-                                    {item.name}
+                                    <div className="flex items-center flex-1">
+                                        <route.icon className={cn("h-5 w-5 mr-3", route.color)} />
+                                        {route.label}
+                                    </div>
                                 </Link>
-                            );
-                        })}
-                    </nav>
+                            ))}
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </SheetContent>
+        </Sheet>
     );
 }

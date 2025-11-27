@@ -2,49 +2,61 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, FileText, Calendar } from "lucide-react";
-
+import { LayoutDashboard, CheckSquare, StickyNote, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Tasks", href: "/tasks", icon: CheckSquare },
-    { name: "Notes", href: "/notes", icon: FileText },
-    { name: "Calendar", href: "/calendar", icon: Calendar },
+const routes = [
+    {
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        href: "/dashboard",
+    },
+    {
+        label: "Tasks",
+        icon: CheckSquare,
+        href: "/tasks",
+    },
+    {
+        label: "Notes",
+        icon: StickyNote,
+        href: "/notes",
+    },
+    {
+        label: "Calendar",
+        icon: Calendar,
+        href: "/calendar",
+    },
 ];
 
 export function Sidebar() {
     const pathname = usePathname();
 
     return (
-        <div className="hidden border-r bg-gray-100/40 dark:bg-gray-800/40 lg:block lg:w-64 lg:flex-col">
-            <div className="flex h-full flex-col gap-2">
-                <div className="flex h-[60px] items-center border-b px-6">
-                    <Link className="flex items-center gap-2 font-semibold" href="/">
-                        <span className="">LifeSync</span>
-                    </Link>
-                </div>
-                <div className="flex-1 overflow-auto py-2">
-                    <nav className="grid items-start px-4 text-sm font-medium">
-                        {navigation.map((item) => {
-                            const Icon = item.icon;
-                            return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={cn(
-                                        "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-gray-900 dark:hover:text-gray-50",
-                                        pathname === item.href || pathname.startsWith(item.href + "/")
-                                            ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
-                                            : "text-gray-500 dark:text-gray-400"
-                                    )}
-                                >
-                                    <Icon className="h-4 w-4" />
-                                    {item.name}
-                                </Link>
-                            );
-                        })}
-                    </nav>
+        <div className="space-y-4 py-4 flex flex-col h-full bg-secondary border-r border-border">
+            <div className="px-3 py-2 flex-1">
+                <Link href="/dashboard" className="flex items-center pl-3 mb-14">
+                    <h1 className="text-xl font-semibold tracking-tight text-foreground">
+                        LifeSync
+                    </h1>
+                </Link>
+                <div className="space-y-1">
+                    {routes.map((route) => (
+                        <Link
+                            key={route.href}
+                            href={route.href}
+                            className={cn(
+                                "text-sm group flex p-2 w-full justify-start font-medium cursor-pointer rounded-md transition-colors",
+                                pathname === route.href
+                                    ? "bg-primary/5 text-primary font-semibold"
+                                    : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
+                            )}
+                        >
+                            <div className="flex items-center flex-1">
+                                <route.icon className={cn("h-4 w-4 mr-3", pathname === route.href ? "text-primary" : "text-muted-foreground")} />
+                                {route.label}
+                            </div>
+                        </Link>
+                    ))}
                 </div>
             </div>
         </div>

@@ -1,6 +1,10 @@
+"use client";
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { motion } from "framer-motion";
+
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
@@ -8,9 +12,9 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                default: "bg-primary-600 text-primary-foreground hover:bg-primary-600/90",
+                default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
                 destructive:
-                    "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+                    "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
                 outline:
                     "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
                 secondary:
@@ -33,20 +37,36 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-    extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onAnimationStart" | "onDragStart" | "onDragEnd" | "onDrag" | "ref">,
     VariantProps<typeof buttonVariants> {
     asChild?: boolean;
+    loading?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, ...props }, ref) => {
-        const Comp = asChild ? Slot : "button";
+    ({ className, variant, size, asChild = false, loading, children, ...props }, ref) => {
+        const Comp = asChild ? Slot : motion.button;
+
+        const motionProps = asChild ? {} : {
+            whileTap: { scale: 0.98 },
+            whileHover: { scale: 1.02 },
+            transition: { type: "spring", stiffness: 400, damping: 17 }
+        };
+
         return (
+            // @ts-expect-error - Framer motion types conflict with React types sometimes
             <Comp
                 className={cn(buttonVariants({ variant, size, className }))}
                 ref={ref}
+                disabled={loading || props.disabled}
+                {...motionProps}
                 {...props}
-            />
+            >
+                {loading && (
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                )}
+                {children}
+            </Comp>
         );
     }
 );

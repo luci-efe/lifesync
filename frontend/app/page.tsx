@@ -16,17 +16,17 @@ export default async function Home() {
         <div className="flex items-center gap-4">
           <ThemeToggle />
           {userId ? (
-            <Button asChild>
-              <Link href="/dashboard">Go to Dashboard</Link>
-            </Button>
+            <Link href="/dashboard">
+              <Button>Go to Dashboard</Button>
+            </Link>
           ) : (
             <>
-              <Button variant="ghost" asChild>
-                <Link href="/sign-in">Sign In</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/sign-up">Get Started</Link>
-              </Button>
+              <Link href="/sign-in">
+                <Button variant="ghost">Sign In</Button>
+              </Link>
+              <Link href="/sign-up">
+                <Button>Get Started</Button>
+              </Link>
             </>
           )}
         </div>
@@ -45,17 +45,17 @@ export default async function Home() {
               </div>
               <div className="space-x-4">
                 {userId ? (
-                  <Button size="lg" asChild>
-                    <Link href="/dashboard">
+                  <Link href="/dashboard">
+                    <Button size="lg">
                       Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
+                    </Button>
+                  </Link>
                 ) : (
-                  <Button size="lg" asChild>
-                    <Link href="/sign-up">
+                  <Link href="/sign-up">
+                    <Button size="lg">
                       Get Started <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
+                    </Button>
+                  </Link>
                 )}
               </div>
             </div>
