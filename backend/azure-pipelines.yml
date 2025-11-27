@@ -1,0 +1,71 @@
+trigger:
+  paths:
+    include:
+      - backend/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  dockerRegistryServiceConnection: 'DockerHubConnection' # Replace with your service connection name
+  imageRepository: 'lifesync-backend'
+  containerRegistry: 'your-docker-hub-username' # Replace with your Docker Hub username
+  dockerfilePath: '$(Build.SourcesDirectory)/backend/Dockerfile'
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build and Test
+  jobs:
+  - job: Build
+    displayName: Build
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '20.x'
+      displayName: 'Install Node.js'
+
+    - script: |
+        cd backend
+        npm ci
+        npx prisma generate
+        npm run build
+      displayName: 'npm install and build'
+
+    - script: |
+        cd backend
+        npm test
+      displayName: 'Run unit tests'
+
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/junit.xml'
+        searchFolder: '$(System.DefaultWorkingDirectory)/backend'
+      displayName: 'Publish test results'
+
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/backend/coverage/cobertura-coverage.xml'
+      displayName: 'Publish code coverage'
+
+- stage: Docker
+  displayName: Build and Push Docker Image
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: Docker
+    displayName: Docker Build & Push
+    steps:
+    - task: Docker@2
+      displayName: Build and Push
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+          latest
