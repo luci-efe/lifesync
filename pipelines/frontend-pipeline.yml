@@ -59,6 +59,8 @@ stages:
     displayName: Build and Push Docker Image
     dependsOn: Build
     condition: succeeded()
+    variables:
+      - group: LifeSync-Secrets-Dev
     jobs:
       - job: Docker
         displayName: Docker Build & Push
@@ -74,24 +76,26 @@ stages:
           - script: |
               echo "=== Debug: Checking Azure Pipeline variables ==="
               echo "Raw variable test (should show value or literal string):"
-              echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY from env: [$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY]"
-              echo "Length: ${#NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}"
+              echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: [${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}]"
+              echo "NEXT_PUBLIC_API_URL: [${NEXT_PUBLIC_API_URL}]"
               echo ""
-              echo "If the above shows '[]' or literal '[\$(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)]', the variable group is not linked correctly."
-              echo ""
+              
+              if [ -z "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ] && [ -z "$NEXT_PUBLIC_API_URL" ]; then
+                 echo "##[error]BOTH variables are empty. The variable group 'LifeSync-Secrets-Dev' is likely not linked or accessible."
+                 exit 1
+              fi
+
               if [ -z "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
-                echo "##[error]NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is EMPTY"
-                echo "##[error]Check: 1) Variable group name matches exactly 'LifeSync-Secrets-Dev'"
-                echo "##[error]Check: 2) Variable name in group is exactly 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'"
-                echo "##[error]Check: 3) Variable has a value (not empty)"
+                echo "##[error]NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is EMPTY, but API_URL is present. Check variable name spelling."
                 exit 1
-              elif [ "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" = '$(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)' ]; then
+              fi
+              
+              if [ "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" = '$(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)' ]; then
                 echo "##[error]Variable was not substituted - variable group not accessible"
                 exit 1
-              else
-                echo "##[section]NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is set correctly!"
-                echo "Starts with: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:0:8}..."
               fi
+
+              echo "##[section]Variables appear correct."
             displayName: Verify environment variables
             env:
               NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
