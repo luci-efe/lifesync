@@ -39,6 +39,8 @@ coverage/
 .terraform/
 *.tfvars
 !*.tfvars.example
+!infra/environments/*.tfvars
+*.tfplan
 
 # Misc
 *.tgz

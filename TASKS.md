@@ -10,43 +10,45 @@ Estas tareas requieren acceso a portales web, configuración de cuentas, o decis
 
 ### Configuración Inicial de Servicios
 
-- [ ] **Crear cuenta en Clerk** (https://dashboard.clerk.com)
+- [x] **Crear cuenta en Clerk** (https://dashboard.clerk.com)
   - Crear aplicación "LifeSync"
   - Obtener `CLERK_PUBLISHABLE_KEY` y `CLERK_SECRET_KEY`
   - Configurar OAuth providers si lo deseas (Google, GitHub)
 
-- [ ] **Crear proyecto en Azure DevOps** (https://dev.azure.com)
+- [x] **Crear proyecto en Azure DevOps** (https://dev.azure.com)
   - Nombre: `LifeSync`
   - Invitar a `eduardo.estrada@iteso.mx` con licencia Basic
   - Crear Service Connection a GitHub (si usas GitHub como repo)
   - Crear Service Connection a Azure (Azure Resource Manager)
 
-- [ ] **Verificar suscripción Azure for Students**
+- [x] **Verificar suscripción Azure for Students**
   - Confirmar que tienes créditos disponibles
   - Verificar que región `eastus2` está disponible
   - Revisar límites de recursos (App Service F1/B1)
+  - *Nota: Si hay problemas, cambiar a Pay-As-You-Go*
 
 ### Configuración de Azure DevOps
 
-- [ ] **Crear Variable Groups en Library**
-  - `LifeSync-Secrets-Dev`:
-    - `CLERK_PUBLISHABLE_KEY`
-    - `CLERK_SECRET_KEY`
-    - `DATABASE_URL` (después de crear PostgreSQL)
-    - `APPLICATIONINSIGHTS_CONNECTION_STRING`
-    - `ACR_USERNAME`
-    - `ACR_PASSWORD`
-  - `LifeSync-Secrets-Prod` (mismas variables, valores de prod)
+- [x] **Crear Variable Groups en Library** (parcialmente completado)
+  - `LifeSync-Secrets-Dev` y `LifeSync-Secrets-Prod`:
+    - [x] `CLERK_PUBLISHABLE_KEY`
+    - [x] `CLERK_SECRET_KEY`
+    - [x] `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+    - [x] `DOCKERHUB_USERNAME`
+    - [x] `DOCKERHUB_TOKEN`
+    - [ ] `DATABASE_URL` ⏳ *Esperar a Fase 1: después de `terraform apply` con PostgreSQL*
+    - [ ] `APPLICATIONINSIGHTS_CONNECTION_STRING` ⏳ *Esperar a Fase 1: después de `terraform apply` con App Insights*
 
-- [ ] **Configurar Branch Policies**
-  - Rama `main`: Requerir PR, 1 reviewer, build exitoso
-  - Rama `develop`: Requerir PR, build exitoso
+- [x] **Configurar Branch Policies** (parcialmente completado)
+  - [x] Rama `main`: Requerir PR, 1 reviewer
+  - [x] Rama `develop`: Requerir PR
+  - [ ] Build validation en ambas ramas ⏳ *Esperar a Fase 4: después de crear pipelines*
 
-- [ ] **Crear Backlog Items en Azure Boards**
+- [x] **Crear Backlog Items en Azure Boards**
   - Usar el contenido de `project-context/backlog-idea.md`
   - Crear Epics, Features y Tasks según el documento
 
-- [ ] **Crear Wiki del proyecto**
+- [x] **Crear Wiki del proyecto**
   - Descripción del proyecto
   - Stack tecnológico
   - Diagrama de infraestructura
@@ -55,14 +57,14 @@ Estas tareas requieren acceso a portales web, configuración de cuentas, o decis
 
 ### Configuración Local
 
-- [ ] **Instalar herramientas necesarias**
+- [x] **Instalar herramientas necesarias**
   - Node.js 20 LTS
   - Docker Desktop
   - Terraform CLI
   - Azure CLI (`az login`)
   - Git configurado
 
-- [ ] **Clonar y configurar repositorio**
+- [x] **Clonar y configurar repositorio**
   - Crear ramas `main` y `develop`
   - Configurar `.env` files locales (no commitear)
 
@@ -140,15 +142,18 @@ Estos son los features que debes desarrollar. Para cada uno, usa el comando `/op
 
 ## Orden de Desarrollo Sugerido
 
-### Sprint 1: Fundamentos (Días 1-3)
-1. **Tareas manuales**: Crear cuentas Clerk, Azure DevOps, Variable Groups
+### Sprint 1: Fundamentos
+1. ~~**Tareas manuales**: Crear cuentas Clerk, Azure DevOps, Variable Groups~~ ✅
 2. **Spec**: `add-terraform-base` - Infraestructura base
 3. **Spec**: `add-terraform-apps` - Web Apps
 4. **Spec**: `add-terraform-database` - PostgreSQL
 5. **Spec**: `add-terraform-monitoring` - Application Insights
 6. **Manual**: Ejecutar `terraform apply` para crear recursos
+7. **Manual**: Copiar outputs de Terraform a Variable Groups:
+   - `DATABASE_URL` → de output `postgresql_connection_string`
+   - `APPLICATIONINSIGHTS_CONNECTION_STRING` → de output `appinsights_connection_string`
 
-### Sprint 2: Backend (Días 4-6)
+### Sprint 2: Backend
 1. **Spec**: `add-backend-setup` - Express base
 2. **Spec**: `add-prisma-schema` - Modelos de datos
 3. **Spec**: `add-backend-crud` - Endpoints CRUD
@@ -156,7 +161,7 @@ Estos son los features que debes desarrollar. Para cada uno, usa el comando `/op
 5. **Spec**: `add-backend-tests` - Tests unitarios
 6. **Spec**: `add-backend-docker` - Dockerfile
 
-### Sprint 3: Frontend (Días 7-9)
+### Sprint 3: Frontend
 1. **Spec**: `add-frontend-setup` - Next.js base
 2. **Spec**: `add-clerk-auth` - Autenticación
 3. **Spec**: `add-frontend-layout` - Layout
@@ -164,13 +169,16 @@ Estos son los features que debes desarrollar. Para cada uno, usa el comando `/op
 5. **Spec**: `add-notes-ui` - UI de notas
 6. **Spec**: `add-frontend-docker` - Dockerfile
 
-### Sprint 4: DevOps & Demo (Días 10-12)
+### Sprint 4: DevOps & Demo
 1. **Spec**: `add-backend-pipeline` - Pipeline backend
 2. **Spec**: `add-frontend-pipeline` - Pipeline frontend
 3. **Spec**: `add-approval-gates` - Gates de aprobación
-4. **Manual**: Configurar pipelines en Azure DevOps
-5. **Manual**: Probar flujo completo PR → Dev → Prod
-6. **Manual**: Preparar demo con APM
+4. **Manual**: Registrar pipelines en Azure DevOps (importar YAML)
+5. **Manual**: Agregar Build Validation a Branch Policies:
+   - Rama `main`: Agregar backend y frontend pipelines como validación
+   - Rama `develop`: Agregar backend y frontend pipelines como validación
+6. **Manual**: Probar flujo completo PR → Dev → Prod
+7. **Manual**: Preparar demo con APM
 
 ---
 
