@@ -1,22 +1,34 @@
 import { Request, Response, NextFunction } from 'express';
+import { clerkMiddleware, getAuth } from '@clerk/express';
 import { AppError } from './error';
 
 declare global {
     namespace Express {
         interface Request {
-            userId?: string;
+            auth: {
+                userId: string | null;
+                sessionId: string | null;
+                getToken: () => Promise<string | null>;
+            };
+            userId?: string; // Keep for backward compatibility/ease of use
         }
     }
 }
 
-export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.headers['x-user-id'] as string;
+// Global Clerk middleware
+export const clerkAuth = clerkMiddleware();
 
-    if (!userId) {
-        throw new AppError('Unauthorized: Missing x-user-id header', 401);
+// Middleware to require authentication
+export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+    const auth = getAuth(req);
+
+    if (!auth.userId) {
+        throw new AppError('Unauthorized: Unauthenticated', 401);
     }
 
-    // In a real app, we would validate this ID with Clerk here
-    req.userId = userId;
+    // Set userId on request for convenience
+    req.userId = auth.userId;
+    req.auth = auth;
+
     next();
 };

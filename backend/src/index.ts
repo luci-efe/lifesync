@@ -11,11 +11,14 @@ import { tasksRouter } from './routes/tasks';
 import { notesRouter } from './routes/notes';
 import { simulateErrorRouter } from './routes/simulate-error';
 
+import { clerkAuth } from './middleware/auth';
+
 const app = express();
 
 // Middleware
 app.use(corsMiddleware);
 app.use(express.json());
+app.use(clerkAuth); // Add Clerk middleware
 
 // Routes
 app.use('/api/health', healthRouter);

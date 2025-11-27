@@ -28,3 +28,16 @@ jest.mock('../src/lib/prisma', () => ({
         $queryRaw: jest.fn(),
     },
 }));
+
+// Mock Clerk
+jest.mock('@clerk/express', () => ({
+    clerkMiddleware: () => (req: any, res: any, next: any) => {
+        req.auth = {
+            userId: req.headers['x-user-id'] || null,
+            sessionId: 'test_session',
+            getToken: async () => 'test_token',
+        };
+        next();
+    },
+    getAuth: (req: any) => req.auth,
+}));

@@ -3,9 +3,11 @@ import express from 'express';
 import { notesRouter } from '../src/routes/notes';
 import { prisma } from '../src/lib/prisma';
 import { errorHandler } from '../src/middleware/error';
+import { clerkAuth } from '../src/middleware/auth';
 
 const app = express();
 app.use(express.json());
+app.use(clerkAuth);
 app.use('/api/v1/notes', notesRouter);
 app.use(errorHandler);
 

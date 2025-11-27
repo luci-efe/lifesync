@@ -3,9 +3,11 @@ import express from 'express';
 import { tasksRouter } from '../src/routes/tasks';
 import { prisma } from '../src/lib/prisma';
 import { errorHandler } from '../src/middleware/error';
+import { clerkAuth } from '../src/middleware/auth';
 
 const app = express();
 app.use(express.json());
+app.use(clerkAuth);
 app.use('/api/v1/tasks', tasksRouter);
 app.use(errorHandler);
 
@@ -51,7 +53,7 @@ describe('Tasks Endpoints', () => {
         expect(res.body.data.title).toBe('Test Task');
     });
 
-    it('should return 401 if x-user-id is missing', async () => {
+    it('should return 401 if user is unauthenticated', async () => {
         const res = await request(app).get('/api/v1/tasks');
         expect(res.status).toBe(401);
     });
