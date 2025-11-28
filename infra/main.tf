@@ -78,7 +78,8 @@ module "web_app_backend" {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = module.app_insights.connection_string
     "CLERK_SECRET_KEY"                      = var.clerk_secret_key
     "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"     = var.clerk_publishable_key
-  }
+    "WEBSITES_CONTAINER_START_TIME_LIMIT"   = "1800"
+    "ALLOWED_ORIGINS"                       = "*"
   
   tags = local.tags
 }
@@ -95,8 +96,10 @@ module "web_app_frontend" {
   always_on           = var.app_service_sku != "F1"
   
   app_settings = {
-    "NEXT_PUBLIC_API_URL"             = module.web_app_backend.url
+    "NEXT_PUBLIC_API_URL"                   = module.web_app_backend.url
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = module.app_insights.connection_string
+    "CLERK_SECRET_KEY"                      = var.clerk_secret_key
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"     = var.clerk_publishable_key
   }
   
   tags = local.tags
