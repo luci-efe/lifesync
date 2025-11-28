@@ -114,7 +114,7 @@ stages:
               steps:
                 - task: AzureWebAppContainer@1
                   inputs:
-                    azureSubscription: 'azure-service-connection-dev'
+                    azureSubscription: 'azure-connection-dev-v2'
                     appName: 'lifesync-frontend-dev'
                     containers: '$(containerRegistry)/$(imageRepository):$(tag)'
 
@@ -148,7 +148,7 @@ stages:
               steps:
                 - task: AzureWebAppContainer@1
                   inputs:
-                    azureSubscription: 'azure-service-connection-prod'
+                    azureSubscription: 'azure-connection-prod-v2'
                     appName: 'lifesync-frontend-prod'
                     containers: '$(containerRegistry)/$(imageRepository):$(tag)'
 
