@@ -48,3 +48,14 @@ variable "owner_email" {
   description = "Email of the owner for tagging"
   type        = string
 }
+
+variable "clerk_secret_key" {
+  description = "Clerk Secret Key"
+  type        = string
+  sensitive   = true
+}
+
+variable "clerk_publishable_key" {
+  description = "Clerk Publishable Key"
+  type        = string
+}
