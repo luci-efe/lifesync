@@ -74,8 +74,10 @@ module "web_app_backend" {
   always_on           = var.app_service_sku != "F1"
   
   app_settings = {
-    "DATABASE_URL"                    = module.postgresql.connection_strings["lifesync_${var.environment}"]
+    "DATABASE_URL"                          = module.postgresql.connection_strings["lifesync_${var.environment}"]
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = module.app_insights.connection_string
+    "CLERK_SECRET_KEY"                      = var.clerk_secret_key
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"     = var.clerk_publishable_key
   }
   
   tags = local.tags
