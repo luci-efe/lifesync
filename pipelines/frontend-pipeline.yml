@@ -1,0 +1,165 @@
+trigger:
+  branches:
+    include:
+      - main
+      - dev
+  paths:
+    include:
+      - frontend/*
+
+pr:
+  branches:
+    include:
+      - main
+      - dev
+  paths:
+    include:
+      - frontend/*
+
+variables:
+  - group: LifeSync-Secrets-Dev # Default to dev secrets
+  - name: dockerRegistryServiceConnection
+    value: 'dockerhub-lifesync'
+  - name: imageRepository
+    value: 'lifesync-frontend'
+  - name: containerRegistry
+    value: '$(DOCKERHUB_USERNAME)'
+  - name: dockerfilePath
+    value: '$(Build.SourcesDirectory)/frontend/Dockerfile'
+  - name: tag
+    value: '$(Build.BuildId)'
+  - name: vmImageName
+    value: 'ubuntu-latest'
+
+stages:
+  - stage: Build
+    displayName: Build and Lint
+    jobs:
+      - job: Build
+        displayName: Build
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '20.x'
+            displayName: 'Install Node.js'
+
+          - script: |
+              cd frontend
+              npm ci
+              npm run lint
+              npm run build
+            displayName: 'npm install, lint, and build'
+            env:
+              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
+              NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
+
+  - stage: Package
+    displayName: Build and Push Docker Image
+    dependsOn: Build
+    condition: succeeded()
+    variables:
+      - group: LifeSync-Secrets-Dev
+    jobs:
+      - job: Docker
+        displayName: Docker Build & Push
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: Docker@2
+            displayName: Login to Docker Registry
+            inputs:
+              command: login
+              containerRegistry: $(dockerRegistryServiceConnection)
+
+          - script: |
+              docker build \
+                --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
+                --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
+                -t $(containerRegistry)/$(imageRepository):$(tag) \
+                -t $(containerRegistry)/$(imageRepository):$(Build.SourceBranchName)-latest \
+                -f $(dockerfilePath) \
+                $(Build.SourcesDirectory)/frontend
+            displayName: Build Docker Image
+            env:
+              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: $(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
+              NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
+
+          - task: Docker@2
+            displayName: Push Docker Image
+            inputs:
+              command: push
+              repository: $(containerRegistry)/$(imageRepository)
+              containerRegistry: $(dockerRegistryServiceConnection)
+              tags: |
+                $(tag)
+                $(Build.SourceBranchName)-latest
+
+  - stage: DeployDev
+    displayName: Deploy to Dev
+    dependsOn: Package
+    # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+    variables:
+      - group: LifeSync-Secrets-Dev
+    jobs:
+      - deployment: Deploy
+        displayName: Deploy to Dev Web App
+        environment: 'dev'
+        pool:
+          vmImage: $(vmImageName)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebAppContainer@1
+                  inputs:
+                    azureSubscription: 'azure-connection-dev-v2'
+                    appName: 'lifesync-frontend-dev'
+                    containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+
+                - script: |
+                    for i in 1 2 3; do
+                      STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://lifesync-frontend-dev.azurewebsites.net/)
+                      echo "Attempt $i: HTTP $STATUS"
+                      if [ "$STATUS" = "200" ]; then echo "Health check passed"; exit 0; fi
+                      sleep 10
+                    done
+                    echo "Health check failed after 3 attempts (warning only)"
+                    exit 0
+                  displayName: 'Health Check'
+                  continueOnError: true
+
+  - stage: DeployProd
+    displayName: Deploy to Prod
+    dependsOn: Package
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    variables:
+      - group: LifeSync-Secrets-Prod
+    jobs:
+      - deployment: Deploy
+        displayName: Deploy to Prod Web App
+        environment: 'prod'
+        pool:
+          vmImage: $(vmImageName)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebAppContainer@1
+                  inputs:
+                    azureSubscription: 'azure-connection-prod-v2'
+                    appName: 'lifesync-frontend-prod'
+                    containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+
+                - script: |
+                    for i in 1 2 3; do
+                      STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://lifesync-frontend-prod.azurewebsites.net/)
+                      echo "Attempt $i: HTTP $STATUS"
+                      if [ "$STATUS" = "200" ]; then echo "Health check passed"; exit 0; fi
+                      sleep 10
+                    done
+                    echo "Health check failed after 3 attempts (warning only)"
+                    exit 0
+                  displayName: 'Health Check'
+                  continueOnError: true
